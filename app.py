@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# Create client using environment variable
+# Create Gemini client using environment variable
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 @app.route("/")
