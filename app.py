@@ -1,11 +1,12 @@
 from flask import Flask, render_template, request, jsonify
 from google import genai
-
+import os
 # Initialize Flask app
 app = Flask(__name__)
 
 # Initialize Google GenAI client
-client = genai.Client(api_key="")  #key
+
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
 @app.route("/", methods=["GET"])
 def index():
@@ -32,4 +33,5 @@ def chat():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
