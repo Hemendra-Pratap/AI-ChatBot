@@ -35,3 +35,14 @@ if __name__ == "__main__":
     app.run()
 
 
+@app.route("/models")
+def list_models():
+    try:
+        models = client.models.list()
+        return jsonify([m.name for m in models])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
