@@ -21,7 +21,7 @@ def chat():
             return jsonify({"error": "Empty message"}), 400
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-1.5-flash-latest",
             contents=prompt
         )
 
@@ -33,4 +33,5 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
 
