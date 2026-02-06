@@ -9,7 +9,7 @@ app = Flask(__name__)
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # Create model instance
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-1.5-pro")
 
 @app.route("/", methods=["GET"])
 def index():
@@ -34,3 +34,4 @@ def chat():
 
 if __name__ == "__main__":
     app.run()
+
