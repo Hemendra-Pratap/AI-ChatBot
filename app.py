@@ -21,7 +21,7 @@ def chat():
             return jsonify({"error": "Empty message"}), 400
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash-latest",
+            model="models/gemini-flash-latest",
             contents=prompt
         )
 
@@ -42,6 +42,7 @@ def list_models():
         return jsonify([m.name for m in models])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 
