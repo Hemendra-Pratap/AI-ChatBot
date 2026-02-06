@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 AI SaaS Dashboard</title>
+
+<!-- Markdown -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<!-- Highlight.js -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+
+/* =====================================================
+   THEME VARIABLES
+===================================================== */
+
+:root {
+    --bg: #0f1115;
+    --sidebar: #151922;
+    --panel: #1a1f2b;
+    --text: #f5f5f5;
+    --muted: #9ca3af;
+    --border: #232838;
+    --accent: #3b82f6;
+    --danger: #ef4444;
+    --shadow: rgba(0,0,0,0.4);
+}
+
+body.light {
+    --bg: #ffffff;
+    --sidebar: #f3f4f6;
+    --panel: #ffffff;
+    --text: #111111;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #2563eb;
+    --danger: #dc2626;
+    --shadow: rgba(0,0,0,0.08);
+}
+
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+}
+
+/* =====================================================
+   SIDEBAR (Slide-Out)
+===================================================== */
+
+.sidebar {
+    width: 280px;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100%;
+    left: -280px;
+    transition: 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar-header {
+    padding: 18px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+}
+
+.chat-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.chat-item {
+    padding: 10px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.chat-item:hover {
+    background: var(--panel);
+}
+
+.chat-item.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+.sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid var(--border);
+}
+
+/* =====================================================
+   MAIN PANEL
+===================================================== */
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Header */
+
+.header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.menu-btn {
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.header-right {
+    display: flex;
+    gap: 10px;
+}
+
+/* Buttons */
+
+.btn {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn:hover {
+    background: var(--panel);
+}
+
+/* =====================================================
+   CHAT AREA
+===================================================== */
+
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.message {
+    display: flex;
+}
+
+.message.user {
+    justify-content: flex-end;
+}
+
+.content {
+    max-width: 75%;
+    padding: 14px 18px;
+    border-radius: 14px;
+    background: var(--panel);
+    box-shadow: 0 4px 12px var(--shadow);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.message.user .content {
+    background: var(--accent);
+    color: #fff;
+}
+
+/* Markdown */
+
+.content h1, .content h2 {
+    margin: 12px 0 8px 0;
+}
+
+.content p {
+    margin-bottom: 10px;
+}
+
+.content pre {
+    position: relative;
+    padding: 12px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+}
+
+/* =====================================================
+   INPUT AREA (Lifted)
+===================================================== */
+
+.input-area {
+    border-top: 1px solid var(--border);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 10px;
+}
+
+textarea {
+    flex: 1;
+    padding: 14px 18px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    resize: none;
+    font-size: 14px;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.send-btn {
+    padding: 12px 18px;
+    border-radius: 20px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+}
+
+/* =====================================================
+   MODAL (Settings)
+===================================================== */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    width: 400px;
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+.toast {
+    background: var(--panel);
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 10px;
+    font-size: 13px;
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (min-width: 768px) {
+    .sidebar {
+        left: 0;
+        position: relative;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">💬 Chats</div>
+    <div class="chat-list" id="chatList"></div>
+    <div class="sidebar-footer">
+        <button class="btn" id="newChatBtn">➕ New Chat</button>
+    </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+    <div class="header">
+        <div class="header-left">
+            <div class="menu-btn" id="menuBtn">☰</div>
+            <h2>🚀 AI Dashboard</h2>
+        </div>
+        <div class="header-right">
+            <button class="btn" id="settingsBtn">⚙ Settings</button>
+            <button class="btn" id="themeToggle">🌗 Theme</button>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chatContainer"></div>
+
+    <div class="input-area">
+        <div class="input-wrapper">
+            <textarea id="messageInput" rows="1" placeholder="Type your message..."></textarea>
+            <button class="send-btn" id="sendBtn">📤</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Settings Modal -->
+<div class="modal" id="settingsModal">
+    <div class="modal-content">
+        <h3>⚙ Settings</h3>
+        <br>
+        <label>Model</label>
+        <select id="modelSelect">
+            <option value="models/gemini-2.5-flash">Gemini 2.5 Flash</option>
+            <option value="models/gemini-2.5-pro">Gemini 2.5 Pro</option>
+        </select>
+        <br><br>
+        <label>Temperature</label>
+        <input type="range" id="temperatureRange" min="0" max="1" step="0.1" value="0.7">
+        <br><br>
+        <button class="btn" id="exportBtn">📥 Export Chat</button>
+        <button class="btn" id="closeSettings">Close</button>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+
+/* =========================================================
+   GLOBAL STATE
+========================================================= */
+
+const sidebar = document.getElementById("sidebar");
+const menuBtn = document.getElementById("menuBtn");
+const chatList = document.getElementById("chatList");
+const newChatBtn = document.getElementById("newChatBtn");
+const chatContainer = document.getElementById("chatContainer");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettings = document.getElementById("closeSettings");
+const themeToggle = document.getElementById("themeToggle");
+
+const modelSelect = document.getElementById("modelSelect");
+const temperatureRange = document.getElementById("temperatureRange");
+const exportBtn = document.getElementById("exportBtn");
+
+const toastContainer = document.getElementById("toastContainer");
+
+let chats = JSON.parse(localStorage.getItem("chats")) || {};
+let activeChatId = localStorage.getItem("activeChatId") || null;
+let isLoading = false;
+
+/* =========================================================
+   SIDEBAR TOGGLE
+========================================================= */
+
+menuBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("active");
+});
+
+/* =========================================================
+   THEME SYSTEM
+========================================================= */
+
+if (localStorage.getItem("theme") === "light") {
+    document.body.classList.add("light");
+}
+
+themeToggle.addEventListener("click", () => {
+    document.body.classList.toggle("light");
+    localStorage.setItem(
+        "theme",
+        document.body.classList.contains("light") ? "light" : "dark"
+    );
+});
+
+/* =========================================================
+   CHAT SESSION MANAGEMENT
+========================================================= */
+
+function createChat() {
+    const id = "chat_" + Date.now();
+    chats[id] = {
+        title: "New Chat",
+        messages: []
+    };
+    activeChatId = id;
+    saveChats();
+    renderChatList();
+    renderMessages();
+}
+
+function saveChats() {
+    localStorage.setItem("chats", JSON.stringify(chats));
+    localStorage.setItem("activeChatId", activeChatId);
+}
+
+function renderChatList() {
+    chatList.innerHTML = "";
+
+    Object.keys(chats).forEach(id => {
+        const item = document.createElement("div");
+        item.className = "chat-item";
+        if (id === activeChatId) item.classList.add("active");
+        item.textContent = chats[id].title;
+
+        item.onclick = () => {
+            activeChatId = id;
+            saveChats();
+            renderChatList();
+            renderMessages();
+        };
+
+        item.oncontextmenu = (e) => {
+            e.preventDefault();
+            renameChat(id);
+        };
+
+        chatList.appendChild(item);
+    });
+}
+
+function renameChat(id) {
+    const newName = prompt("Rename chat:");
+    if (newName) {
+        chats[id].title = newName;
+        saveChats();
+        renderChatList();
+    }
+}
+
+newChatBtn.addEventListener("click", createChat);
+
+/* =========================================================
+   RENDER MESSAGES
+========================================================= */
+
+function renderMessages() {
+    chatContainer.innerHTML = "";
+    if (!activeChatId || !chats[activeChatId]) return;
+
+    chats[activeChatId].messages.forEach(msg => {
+        addMessageToDOM(msg.role, msg.content);
+    });
+
+    scrollToBottom();
+}
+
+/* =========================================================
+   ADD MESSAGE
+========================================================= */
+
+function addMessage(role, content) {
+    if (!activeChatId) createChat();
+
+    chats[activeChatId].messages.push({ role, content });
+    saveChats();
+    renderMessages();
+}
+
+function addMessageToDOM(role, content) {
+    const wrapper = document.createElement("div");
+    wrapper.className = `message ${role}`;
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "content";
+
+    if (role === "bot") {
+        contentDiv.innerHTML = marked.parse(content);
+        setTimeout(() => {
+            hljs.highlightAll();
+            addCopyButtons();
+        }, 0);
+    } else {
+        contentDiv.textContent = content;
+    }
+
+    wrapper.appendChild(contentDiv);
+    chatContainer.appendChild(wrapper);
+}
+
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
+sendBtn.addEventListener("click", sendMessage);
+
+messageInput.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+/* Auto resize textarea */
+messageInput.addEventListener("input", () => {
+    messageInput.style.height = "auto";
+    messageInput.style.height = messageInput.scrollHeight + "px";
+});
+
+function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text || isLoading) return;
+
+    messageInput.value = "";
+    messageInput.style.height = "auto";
+
+    addMessage("user", text);
+
+    isLoading = true;
+
+    const botMsg = addStreamingPlaceholder();
+
+    fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            message: text,
+            model: modelSelect.value,
+            temperature: temperatureRange.value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            botMsg.innerHTML = data.error;
+        } else {
+            streamResponse(botMsg, data.response);
+        }
+    })
+    .finally(() => {
+        isLoading = false;
+    });
+}
+
+/* =========================================================
+   STREAMING EFFECT
+========================================================= */
+
+function addStreamingPlaceholder() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "message bot";
+
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "content";
+    contentDiv.textContent = "Typing...";
+    wrapper.appendChild(contentDiv);
+    chatContainer.appendChild(wrapper);
+
+    scrollToBottom();
+    return contentDiv;
+}
+
+function streamResponse(container, fullText) {
+    let i = 0;
+    container.textContent = "";
+
+    const interval = setInterval(() => {
+        container.innerHTML = marked.parse(fullText.slice(0, i));
+        hljs.highlightAll();
+        addCopyButtons();
+        scrollToBottom();
+        i += 6;
+
+        if (i >= fullText.length) {
+            clearInterval(interval);
+            addMessage("bot", fullText);
+        }
+    }, 12);
+}
+
+/* =========================================================
+   COPY BUTTON
+========================================================= */
+
+function addCopyButtons() {
+    document.querySelectorAll("pre").forEach(block => {
+        if (!block.querySelector(".copy-btn")) {
+            const btn = document.createElement("button");
+            btn.textContent = "Copy";
+            btn.className = "copy-btn";
+            btn.onclick = () => {
+                navigator.clipboard.writeText(block.innerText);
+                showToast("Code copied 📋");
+            };
+            block.appendChild(btn);
+        }
+    });
+}
+
+/* =========================================================
+   SETTINGS MODAL
+========================================================= */
+
+settingsBtn.onclick = () => settingsModal.classList.add("active");
+closeSettings.onclick = () => settingsModal.classList.remove("active");
+
+exportBtn.onclick = () => {
+    if (!activeChatId) return;
+
+    const dataStr = JSON.stringify(chats[activeChatId], null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "chat.json";
+    a.click();
+
+    showToast("Chat exported 📥");
+};
+
+/* =========================================================
+   TOAST SYSTEM
+========================================================= */
+
+function showToast(message) {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+/* =========================================================
+   SCROLL
+========================================================= */
+
+function scrollToBottom() {
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+if (!activeChatId) createChat();
+renderChatList();
+renderMessages();
+
+</script>
+
+</body>
+</html>
