@@ -1,423 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemini Chatbot</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini Chatbot</title>
 
-        /* 1. Dark Mode Base (Swapping Black/White) */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-            background-color: #1a1a1a; /* Dark background */
-            color: #f0f0f0; /* Light text */
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+<!-- Markdown Parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-        /* Header */
-        .header {
-            border-bottom: 1px solid #333; /* Darker border */
-            padding: 18px 25px;
-            text-align: center;
-            background: #1a1a1a;
-        }
+<style>
+:root {
+    --bg: #1a1a1a;
+    --text: #f0f0f0;
+    --bot-bg: #333333;
+    --user-bg: #007aff;
+    --input-bg: #2a2a2a;
+    --border: #333;
+}
 
-        .header h1 {
-            font-size: 20px; /* Slightly bigger text */
-            font-weight: 600;
-            letter-spacing: -0.02em;
-            color: #fff;
-        }
+body.light {
+    --bg: #ffffff;
+    --text: #111111;
+    --bot-bg: #f1f1f1;
+    --user-bg: #007aff;
+    --input-bg: #ffffff;
+    --border: #dddddd;
+}
 
-        /* Chat Container */
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px; /* Slightly larger gap */
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        .chat-container::-webkit-scrollbar {
-            width: 8px;
-        }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: 0.3s ease;
+}
 
-        .chat-container::-webkit-scrollbar-track {
-            background: transparent;
-        }
+/* Header */
+.header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        .chat-container::-webkit-scrollbar-thumb {
-            background: #4a4a4a; /* Dark scrollbar */
-            border-radius: 4px;
-        }
+.header h1 {
+    font-size: 20px;
+    font-weight: 600;
+}
 
-        .chat-container::-webkit-scrollbar-thumb:hover {
-            background: #666;
-        }
+.toggle-btn {
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+}
 
-        /* Message Styles */
-        .message {
-            display: flex;
-            gap: 12px;
-            animation: fadeIn 0.3s ease-in;
-        }
+/* Chat Container */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+/* Message Styles */
+.message {
+    display: flex;
+}
 
-        .message.user {
-            justify-content: flex-end;
-        }
+.message.user {
+    justify-content: flex-end;
+}
 
-        /* User Message: Dark background (like a primary color) */
-        .message.user .content {
-            background-color: #007aff; /* A professional blue */
-            color: #fff;
-            border-radius: 20px;
-            padding: 14px 18px; /* Slightly bigger padding */
-            max-width: 70%;
-            word-wrap: break-word;
-            line-height: 1.6;
-            font-size: 16px; /* Slightly bigger text */
-        }
+.content {
+    border-radius: 20px;
+    padding: 14px 18px;
+    max-width: 70%;
+    word-wrap: break-word;
+    line-height: 1.6;
+    font-size: 15px;
+    animation: fadeIn 0.2s ease-in;
+}
 
-        /* Bot Message: Light background against dark body */
-        .message.bot .content {
-            background-color: #333333; /* A medium dark color */
-            color: #f0f0f0;
-            border-radius: 20px;
-            padding: 14px 18px; /* Slightly bigger padding */
-            max-width: 70%;
-            word-wrap: break-word;
-            line-height: 1.6;
-            font-size: 16px; /* Slightly bigger text */
-        }
+.message.user .content {
+    background-color: var(--user-bg);
+    color: #fff;
+}
 
-        /* Loading indicator */
-        .loading {
-            display: flex;
-            gap: 4px;
-            padding: 14px 18px;
-        }
+.message.bot .content {
+    background-color: var(--bot-bg);
+}
 
-        .loading-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #aaa;
-            border-radius: 50%;
-            animation: loading 1.4s infinite;
-        }
+/* Markdown Styling */
+.content h1, .content h2, .content h3 {
+    margin: 10px 0;
+}
 
-        .loading-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
+.content p {
+    margin-bottom: 10px;
+}
 
-        .loading-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
+.content ul {
+    margin-left: 20px;
+}
 
-        @keyframes loading {
-            0%, 60%, 100% {
-                opacity: 0.3;
-            }
-            30% {
-                opacity: 1;
-            }
-        }
+.content code {
+    background: rgba(0,0,0,0.2);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-family: monospace;
+}
 
-        /* 2. Input Area - Styling to be "above" and "bigger" */
-        .input-area {
-            border-top: 1px solid #333;
-            padding: 15px 25px;
-            background: #1a1a1a;
-            /* Added a bottom margin to pull it slightly away from the edge (little above) */
-            margin-bottom: 5px; 
-            margin-left: 10px;
-            margin-right: 10px;
-            border-radius: 12px; /* Professional rounded look for the whole area */
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5); /* Subtle shadow for prominence */
-        }
+.content pre {
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
 
-        .input-wrapper {
-            display: flex;
-            gap: 15px;
-            max-width: 100%;
-            align-items: center;
-        }
+/* Input Area */
+.input-area {
+    border-top: 1px solid var(--border);
+    padding: 15px 25px;
+    background: var(--bg);
+}
 
-        .input-wrapper input {
-            flex: 1;
-            border: 2px solid #4a4a4a; /* Thicker, professional border */
-            border-radius: 28px;
-            padding: 14px 20px; /* Bigger padding (bigger texts/input area) */
-            font-size: 16px; /* Bigger text */
-            outline: none;
-            transition: border-color 0.2s;
-            background: #2a2a2a; /* Darker input field */
-            color: #f0f0f0;
-        }
+.input-wrapper {
+    display: flex;
+    gap: 15px;
+}
 
-        .input-wrapper input:focus {
-            border-color: #007aff; /* Focus color */
-        }
+.input-wrapper input {
+    flex: 1;
+    border: 2px solid var(--border);
+    border-radius: 28px;
+    padding: 14px 20px;
+    font-size: 15px;
+    outline: none;
+    background: var(--input-bg);
+    color: var(--text);
+}
 
-        .input-wrapper input::placeholder {
-            color: #888;
-        }
+.input-wrapper input:focus {
+    border-color: #007aff;
+}
 
-        .send-btn {
-            background: #007aff; /* Professional blue */
-            color: #fff;
-            border: none;
-            border-radius: 50%;
-            width: 44px; /* Slightly bigger button */
-            height: 44px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background 0.2s;
-            flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
+.send-btn {
+    background: #007aff;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .send-btn:hover:not(:disabled) {
-            background: #005bb5;
-        }
+.send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 
-        .send-btn:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
-
-        .send-btn svg {
-            width: 20px; /* Slightly bigger icon */
-            height: 20px;
-        }
-
-        /* Empty State */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            text-align: center;
-            color: #888;
-        }
-
-        .empty-state h2 {
-            font-size: 30px; /* Bigger heading */
-            margin-bottom: 10px;
-            color: #f0f0f0;
-            font-weight: 600;
-        }
-
-        .empty-state p {
-            font-size: 17px; /* Bigger text */
-            color: #888;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .message.user .content,
-            .message.bot .content {
-                max-width: 85%;
-            }
-
-            .header h1 {
-                font-size: 18px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .chat-container {
-                padding: 15px;
-                gap: 15px;
-            }
-
-            .input-area {
-                padding: 12px;
-                margin: 5px;
-            }
-
-            .message.user .content,
-            .message.bot .content {
-                max-width: 90%;
-                font-size: 15px;
-                padding: 12px 16px;
-            }
-
-            .send-btn {
-                width: 38px;
-                height: 38px;
-            }
-
-            .send-btn svg {
-                width: 18px;
-                height: 18px;
-            }
-        }
-    </style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
 </head>
+
 <body>
-    <div class="header">
-        <h1>Gemini Chatbot</h1>
+
+<div class="header">
+    <h1>Gemini Chatbot</h1>
+    <button class="toggle-btn" id="themeToggle">Toggle Mode</button>
+</div>
+
+<div class="chat-container" id="chatContainer">
+    <div class="empty-state">
+        <h2>Start a conversation</h2>
+        <p>Ask Gemini anything you want</p>
     </div>
+</div>
 
-    <div class="chat-container" id="chatContainer">
-        <div class="empty-state">
-            <h2>Start a conversation</h2>
-            <p>Ask Gemini anything you want</p>
-        </div>
+<div class="input-area">
+    <div class="input-wrapper">
+        <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off">
+        <button class="send-btn" id="sendBtn">➤</button>
     </div>
+</div>
 
-    <div class="input-area">
-        <div class="input-wrapper">
-            <input 
-                type="text" 
-                id="messageInput" 
-                placeholder="Type your message..." 
-                autocomplete="off"
-            >
-            <button class="send-btn" id="sendBtn" aria-label="Send message">
-                <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16865955 C3.34915502,0.9115618 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.97201575 L3.03521743,10.4130088 C3.03521743,10.5701061 3.19218622,10.7272035 3.50612381,10.7272035 L16.6915026,11.5126905 C16.6915026,11.5126905 17.1624089,11.5126905 17.1624089,12.0839826 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z"/>
-                </svg>
-            </button>
-        </div>
-    </div>
+<script>
+const chatContainer = document.getElementById('chatContainer');
+const messageInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+const themeToggle = document.getElementById('themeToggle');
 
-    <script>
-        const chatContainer = document.getElementById('chatContainer');
-        const messageInput = document.getElementById('messageInput');
-        const sendBtn = document.getElementById('sendBtn');
+let isLoading = false;
 
-        let isLoading = false;
+/* Theme Persistence */
+if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light');
+}
 
-        // Send message on button click
-        sendBtn.addEventListener('click', sendMessage);
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    localStorage.setItem('theme',
+        document.body.classList.contains('light') ? 'light' : 'dark'
+    );
+});
 
-        // Send message on Enter key
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+/* Send Message */
+sendBtn.addEventListener('click', sendMessage);
+messageInput.addEventListener('keypress', e => {
+    if (e.key === 'Enter') sendMessage();
+});
 
-        function sendMessage() {
-            const message = messageInput.value.trim();
-            
-            if (!message || isLoading) return;
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (!message || isLoading) return;
 
-            // Clear input
-            messageInput.value = '';
-            messageInput.focus();
+    messageInput.value = '';
+    addMessage(message, 'user');
 
-            // Add user message to chat
-            addMessage(message, 'user');
+    isLoading = true;
+    sendBtn.disabled = true;
 
-            // Show loading indicator
-            showLoadingIndicator();
+    const loadingMsg = addMessage("Thinking...", "bot", true);
 
-            // Send to backend
-            isLoading = true;
-            sendBtn.disabled = true;
-
-            fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Remove loading indicator
-                removeLoadingIndicator();
-
-                if (data.error) {
-                    addMessage('Error: ' + data.error, 'bot');
-                } else {
-                    addMessage(data.response, 'bot');
-                }
-            })
-            .catch(error => {
-                removeLoadingIndicator();
-                addMessage('Error: Failed to get response', 'bot');
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                isLoading = false;
-                sendBtn.disabled = false;
-            });
+    fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+    })
+    .then(res => res.json())
+    .then(data => {
+        loadingMsg.remove();
+        if (data.error) {
+            addMessage("Error: " + data.error, "bot");
+        } else {
+            addMessage(data.response, "bot");
         }
+    })
+    .catch(() => {
+        loadingMsg.remove();
+        addMessage("Error: Failed to get response", "bot");
+    })
+    .finally(() => {
+        isLoading = false;
+        sendBtn.disabled = false;
+    });
+}
 
-        function addMessage(content, sender) {
-            // Remove empty state if it exists
-            const emptyState = chatContainer.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.remove();
-            }
+function addMessage(content, sender, isLoading = false) {
+    const emptyState = document.querySelector('.empty-state');
+    if (emptyState) emptyState.remove();
 
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
 
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'content';
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'content';
+
+    if (isLoading) {
+        contentDiv.textContent = content;
+    } else {
+        if (sender === 'bot') {
+            contentDiv.innerHTML = marked.parse(content);
+        } else {
             contentDiv.textContent = content;
-
-            messageDiv.appendChild(contentDiv);
-            chatContainer.appendChild(messageDiv);
-
-            // Scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+    }
 
-        function showLoadingIndicator() {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message bot';
-            messageDiv.id = 'loadingMessage';
+    messageDiv.appendChild(contentDiv);
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'loading';
+    return messageDiv;
+}
+</script>
 
-            for (let i = 0; i < 3; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'loading-dot';
-                loadingDiv.appendChild(dot);
-            }
-
-            messageDiv.appendChild(loadingDiv);
-            chatContainer.appendChild(messageDiv);
-
-            // Scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function removeLoadingIndicator() {
-            const loadingMessage = document.getElementById('loadingMessage');
-            if (loadingMessage) {
-                loadingMessage.remove();
-            }
-        }
-    </script>
 </body>
 </html>
