@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚀 AI SaaS Dashboard</title>
+<title>🚀 The Chatie-B</title>
 
 <!-- Markdown -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -353,6 +353,7 @@ textarea:focus {
             <h2>🚀 AI Dashboard</h2>
         </div>
         <div class="header-right">
+            <button class="btn" id="clearChatBtn">🗑 Clear</button>
             <button class="btn" id="settingsBtn">⚙ Settings</button>
             <button class="btn" id="themeToggle">🌗 Theme</button>
         </div>
@@ -415,6 +416,8 @@ const temperatureRange = document.getElementById("temperatureRange");
 const exportBtn = document.getElementById("exportBtn");
 
 const toastContainer = document.getElementById("toastContainer");
+const clearChatBtn = document.getElementById("clearChatBtn");
+
 
 let chats = JSON.parse(localStorage.getItem("chats")) || {};
 let activeChatId = localStorage.getItem("activeChatId") || null;
@@ -702,6 +705,24 @@ function showToast(message) {
 function scrollToBottom() {
     chatContainer.scrollTop = chatContainer.scrollHeight;
 }
+
+/* =========================================================
+   CLEAR CHAT BUTTON
+========================================================= */
+
+const clearChatBtn = document.getElementById("clearChatBtn");
+
+clearChatBtn.addEventListener("click", () => {
+    if (!activeChatId) return;
+
+    const confirmClear = confirm("Are you sure you want to clear this chat?");
+    if (!confirmClear) return;
+
+    chats[activeChatId].messages = [];
+    saveChats();
+    renderMessages();
+    showToast("Chat cleared 🗑");
+});
 
 /* =========================================================
    INITIALIZE
